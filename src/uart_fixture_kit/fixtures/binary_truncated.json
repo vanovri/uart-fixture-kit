@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "binary_truncated",
+  "events": [
+    {
+      "at_ms": 0,
+      "hex": "aa550301c409"
+    }
+  ],
+  "end_ms": 1,
+  "expected": [
+    {
+      "kind": "diagnostic",
+      "code": "truncated"
+    }
+  ]
+}

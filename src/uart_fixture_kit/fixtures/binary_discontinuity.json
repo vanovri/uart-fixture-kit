@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "name": "binary_discontinuity",
+  "events": [
+    {
+      "at_ms": 0,
+      "hex": "aa5503ffe803edaa550302b004b9"
+    }
+  ],
+  "end_ms": 1,
+  "expected": [
+    {
+      "kind": "message",
+      "seq": 255,
+      "value": 10.0,
+      "unit": "C"
+    },
+    {
+      "kind": "diagnostic",
+      "code": "sequence_discontinuity",
+      "previous": 255,
+      "seq": 2
+    },
+    {
+      "kind": "message",
+      "seq": 2,
+      "value": 12.0,
+      "unit": "C"
+    }
+  ]
+}

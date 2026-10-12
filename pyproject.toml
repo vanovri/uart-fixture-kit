@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uart-fixture-kit"
+version = "0.1.0"
+description = "Deterministic byte-stream fixtures for testing your own UART parser"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Ardhya Novri Ramadhan"}]
+keywords = ["uart", "serial", "parser", "testing", "embedded"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Testing",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "build>=1,<2"]
+
+[project.scripts]
+uart-fixture-kit = "uart_fixture_kit.cli:main"
+
+[project.urls]
+Repository = "https://github.com/vanovri/uart-fixture-kit"
+Issues = "https://github.com/vanovri/uart-fixture-kit/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+uart_fixture_kit = ["fixtures/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

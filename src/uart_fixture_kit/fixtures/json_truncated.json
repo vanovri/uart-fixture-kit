@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "json_truncated",
+  "events": [
+    {
+      "at_ms": 0,
+      "hex": "7b22736571223a312c2276616c7565223a32352e302c22756e6974223a2243227d"
+    }
+  ],
+  "end_ms": 1,
+  "expected": [
+    {
+      "kind": "diagnostic",
+      "code": "truncated"
+    }
+  ]
+}

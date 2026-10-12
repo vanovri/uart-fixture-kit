@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "json_invalid_fields",
+  "events": [
+    {
+      "at_ms": 0,
+      "hex": "7b22736571223a312c2276616c7565223a4e614e2c22756e6974223a2243227d0a7b22736571223a322c2276616c7565223a32302c22756e6974223a226d56227d0a7b2276616c7565223a32302c22756e6974223a2243227d0a"
+    }
+  ],
+  "end_ms": 1,
+  "expected": [
+    {
+      "kind": "diagnostic",
+      "code": "invalid_record"
+    },
+    {
+      "kind": "diagnostic",
+      "code": "invalid_record"
+    },
+    {
+      "kind": "diagnostic",
+      "code": "invalid_record"
+    }
+  ]
+}

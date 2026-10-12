@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "name": "binary_checksum_recovery",
+  "events": [
+    {
+      "at_ms": 0,
+      "hex": "6e6f697365aa550301c409d0aa5503021efb1e"
+    }
+  ],
+  "end_ms": 1,
+  "expected": [
+    {
+      "kind": "diagnostic",
+      "code": "bad_checksum"
+    },
+    {
+      "kind": "message",
+      "seq": 2,
+      "value": -12.5,
+      "unit": "C"
+    }
+  ]
+}

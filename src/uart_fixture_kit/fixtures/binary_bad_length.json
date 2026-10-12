@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "name": "binary_bad_length",
+  "events": [
+    {
+      "at_ms": 0,
+      "hex": "aa5504aa550301c409d1"
+    }
+  ],
+  "end_ms": 1,
+  "expected": [
+    {
+      "kind": "diagnostic",
+      "code": "bad_length"
+    },
+    {
+      "kind": "message",
+      "seq": 1,
+      "value": 25.0,
+      "unit": "C"
+    }
+  ]
+}
