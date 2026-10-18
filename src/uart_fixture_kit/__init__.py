@@ -7,4 +7,4 @@ __all__ = [
     "Event", "Fixture", "Parser", "ReplayResult", "load_fixture", "replay",
     "chunk_bytes", "drop_bytes", "flip_byte", "schedule",
 ]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

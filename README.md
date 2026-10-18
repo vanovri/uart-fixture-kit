@@ -11,7 +11,7 @@ A serial read can return half a message, several messages, or noise followed by 
 Python 3.10 or newer. No runtime dependencies, API keys, GPU, or hardware.
 
 ```console
-python -m pip install "git+https://github.com/vanovri/uart-fixture-kit.git@v0.1.0"
+python -m pip install "git+https://github.com/vanovri/uart-fixture-kit.git@v0.2.0"
 uart-fixture-kit demo
 uart-fixture-kit demo --json
 ```
@@ -19,6 +19,29 @@ uart-fixture-kit demo --json
 The demo runs bundled synthetic cases for newline JSON and a small binary protocol: complete, fragmented and concatenated messages, malformed JSON, invalid values and units, oversized lines, EOF truncation, stale partial input, bad frame length, checksum failure, resynchronization, duplicate sequence and sequence wraparound.
 
 GitHub is the distribution source for this release. This package has not been published on PyPI.
+
+## UART Parse Profiler
+
+Version 0.2 adds a chunk-scanning JSON alternative without changing the byte-wise reference parser or the default demo. Measure both against the same synthetic input and virtual timestamps:
+
+```console
+uart-fixture-kit profile --records 2048 --repeats 9 --warmups 3 --output uart-profile.json --html uart-profile.html
+```
+
+Open the HTML file for the timing table and cProfile hotspots. JSON keeps every timing sample, environment details, source hashes and a manifest covering input bytes, timestamps and expected records. Seven saved JSON fixtures and four generated workloads must match their explicit record oracles on both parsers before timing. Each timed run is checked again outside the timer. No network connection or serial hardware is required.
+
+One Windows/CPython 3.14.7 run on 18 October 2026 measured the following medians over nine paired repeats:
+
+| Synthetic workload | Reference ms | Chunk scanning ms | Reference / candidate |
+| --- | ---: | ---: | ---: |
+| 76,739 bytes in 4,096-byte chunks | 18.368 | 8.669 | 2.12x |
+| The same stream, repeating chunks 1/2/7/3 | 27.723 | 26.099 | 1.06x |
+| The same stream, one byte per event | 44.280 | 56.507 | 0.78x |
+| Malformed, oversized, stale and partial input recovery | 0.064 | 0.046 | 1.38x |
+
+The alternative was **slower for byte-by-byte arrival**. The smaller difference on fragmented input may be sensitive to measurement noise. These are parser/event-dispatch measurements on one machine, not UART link speed or a general performance guarantee. The original parser remains the default. See [methodology and exact replay](docs/PROFILING.md), [recorded JSON](docs/profile-sample.json) and [standalone HTML](docs/profile-sample.html).
+
+![Actual local profile report, including the slower byte-wise case](docs/profile-preview.png)
 
 ## Catch a real class of bug
 
@@ -149,6 +172,8 @@ python -m build
 ```
 
 Tests include a failing broken-parser regression, every two-chunk split of representative streams, byte-by-byte corruption recovery, timer boundary cases, CLI exit codes, fixture validation, and installed-package demo checks. CI runs on Windows and Linux across Python 3.10, 3.12, and 3.14.
+
+Profiler tests also cover the 127/128/129-byte line boundary, mixed invalid input, empty-feed timeout behavior, bounded oversized partial input, rejection of an incorrect candidate before timing, raw-sample reports and the installed-wheel CLI.
 
 ## Related tools
 
