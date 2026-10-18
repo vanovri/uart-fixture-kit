@@ -27,11 +27,18 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Test contracts and CLI
         run: python -m pytest -q --junitxml=test-results.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test replay-view contracts
+        run: node --test tests/twin.test.mjs
       - name: Build source and wheel distributions
         run: python -m build
       - name: Install wheel instead of editable source
-        run: python -m pip install --force-reinstall --no-deps dist/uart_fixture_kit-0.2.0-py3-none-any.whl
+        run: python -m pip install --force-reinstall --no-deps dist/uart_fixture_kit-0.3.0-py3-none-any.whl
       - name: Replay installed fixtures
         run: python -m uart_fixture_kit demo --json
       - name: Profile installed parsers with a small synthetic corpus
         run: python -m uart_fixture_kit profile --records 8 --repeats 3 --warmups 1 --output profile-smoke.json --html profile-smoke.html
+      - name: Export all eight synthetic fault scenarios from the installed wheel
+        run: python -m uart_fixture_kit twin --frames 12 --output twin-smoke.html --json-output twin-smoke.json

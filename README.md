@@ -11,7 +11,7 @@ A serial read can return half a message, several messages, or noise followed by 
 Python 3.10 or newer. No runtime dependencies, API keys, GPU, or hardware.
 
 ```console
-python -m pip install "git+https://github.com/vanovri/uart-fixture-kit.git@v0.2.0"
+python -m pip install "git+https://github.com/vanovri/uart-fixture-kit.git@v0.3.0"
 uart-fixture-kit demo
 uart-fixture-kit demo --json
 ```
@@ -42,6 +42,32 @@ One Windows/CPython 3.14.7 run on 18 October 2026 measured the following medians
 The alternative was **slower for byte-by-byte arrival**. The smaller difference on fragmented input may be sensitive to measurement noise. These are parser/event-dispatch measurements on one machine, not UART link speed or a general performance guarantee. The original parser remains the default. See [methodology and exact replay](docs/PROFILING.md), [recorded JSON](docs/profile-sample.json) and [standalone HTML](docs/profile-sample.html).
 
 ![Actual local profile report, including the slower byte-wise case](docs/profile-preview.png)
+
+## UART Twin Bench
+
+Version 0.3 adds an offline, self-contained receiver replay with a projected 3D
+temperature glyph. Generate all eight combinations of whole-frame loss, checksum
+damage/noise, and delayed arrivals using the existing binary reference parser:
+
+```console
+uart-fixture-kit twin --frames 120 --output uart-twin.html --json-output uart-twin.json
+```
+
+Open the HTML file, select faults, play or seek the virtual clock, and inspect
+the arrival log. The late-arrival example decodes sequence 5 at 852 ms after
+sequence 8 is already displayed. It stays in the log without rewinding the display
+or refreshing its age. Samples become stale 300 ms after generation, including
+at the end of the replay. Exported JSON preserves generated frames, injected
+faults, received byte chunks, decoded records, timeline, and hashes.
+
+![Actual synthetic replay](docs/twin-preview.png)
+
+See [the standalone demo](docs/twin-sample.html). Python computes the receiver
+timeline; the browser selects and visualizes it. The scene is a data glyph, not
+a hardware digital twin. Timings and Celsius values are synthetic. No device,
+serial connection, physiological model, or physical reliability claim is involved.
+The known injection count is distinct from sequence anomalies observed by the
+receiver. Sum8 is a demonstration checksum, not a CRC or authentication check.
 
 ## Catch a real class of bug
 
