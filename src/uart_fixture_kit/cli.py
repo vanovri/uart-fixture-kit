@@ -19,10 +19,28 @@ def main(argv=None) -> int:
     run.add_argument("fixture", type=Path)
     run.add_argument("--parser", required=True, metavar="MODULE:FACTORY")
     run.add_argument("--json", action="store_true")
+    profile = subcommands.add_parser("profile", help="compare fixed synthetic JSON parser workloads")
+    profile.add_argument("--records", type=int, default=2048)
+    profile.add_argument("--repeats", type=int, default=7)
+    profile.add_argument("--warmups", type=int, default=2)
+    profile.add_argument("--output", type=Path, default=Path("uart-profile.json"))
+    profile.add_argument("--html", type=Path, help="also write a standalone HTML report")
+    profile.set_defaults(json=True)
     args = parser.parse_args(argv)
     reports = []
     try:
-        if args.command == "demo":
+        if args.command == "profile":
+            from .profiler import run_profile
+            from .profile_report import render_profile_html
+            report = run_profile(args.records, args.repeats, args.warmups)
+            args.output.write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
+            if args.html:
+                args.html.write_text(render_profile_html(report), encoding="utf-8")
+            print(json.dumps({"passed": report["passed"], "checks": len(report["gate"]["checks"]),
+                              "workloads": len(report["workloads"]), "report": str(args.output),
+                              "html": str(args.html) if args.html else None}))
+            return 0 if report["passed"] else 1
+        elif args.command == "demo":
             folder = resources.files("uart_fixture_kit").joinpath("fixtures")
             for resource in sorted(folder.iterdir(), key=lambda item: item.name):
                 if not resource.name.endswith(".json"):

@@ -1,0 +1,684 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-18T00:14:59.200252+00:00",
+  "data": "synthetic; no hardware or private captures",
+  "passed": true,
+  "parameters": {
+    "records": 2048,
+    "repeats": 9,
+    "warmups": 3
+  },
+  "environment": {
+    "python": "3.14.7",
+    "implementation": "CPython",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "logical_cpus": 8
+  },
+  "method": {
+    "timer": "perf_counter_ns",
+    "gc": "disabled only during timed runs, restored afterward",
+    "order": "alternating baseline/candidate order per paired repeat",
+    "scope": "fresh parser construction, virtual-event dispatch, emitted records; validation outside timer",
+    "p95": "nearest-rank observed sample",
+    "speed_ratio": "reference median / chunk-scanning median"
+  },
+  "sources": {
+    "reference_sha256": "c9562cf89b2049d0b7299cf7ab857b008e0efb6de0fc4fa1dfdecf4abfda73e7",
+    "candidate_sha256": "da86bce5a1d40f33b62efb4b8c088be1122c49934bd3ff718d8bbb504113a7ac"
+  },
+  "fixture_manifest": [
+    {
+      "name": "json_complete",
+      "sha256": "869943d07227dc653d576ea4e71d7635c2315facab757792d8591dd93b214f4f"
+    },
+    {
+      "name": "json_fragmented",
+      "sha256": "54479abe2c31e8770e82b4e78c9152efb59ad5e913d83df65da884246fe2173b"
+    },
+    {
+      "name": "json_invalid_fields",
+      "sha256": "53616cf53881a9767cddd663544a2eaeb8b11a790f0cf213de1a73591dfb9c80"
+    },
+    {
+      "name": "json_malformed_recovery",
+      "sha256": "b77fa97a74bb5f8c7b3e1e1478b8f25bf82fba5728a7578cc1188f69c0d15c65"
+    },
+    {
+      "name": "json_oversize_recovery",
+      "sha256": "7b0e203e4d1eb0ed854aea21f7755e2a2b1528cab777c637e8d06423b0005d31"
+    },
+    {
+      "name": "json_stale_recovery",
+      "sha256": "d323ea55c6af98adc7fc4a7d552bc7282ab8d83c1c993397c79b950002b20dac"
+    },
+    {
+      "name": "json_truncated",
+      "sha256": "2f15653fd96506df7414d79d9fa0f2d95a62ba95ffbcc5fc8975a58391cbc1cb"
+    },
+    {
+      "name": "bulk-4096",
+      "sha256": "cc202aae41aa6da835ca9f34f99acee02936d6e0afdaa376ecff663a94b890f8"
+    },
+    {
+      "name": "fragmented-1-2-7-3",
+      "sha256": "579d413e5b2fb5a10c22ca452acb358f6728251da0a368b4a4267de214513694"
+    },
+    {
+      "name": "bytewise",
+      "sha256": "33172f6e1f12446c27e1ff3e3e03a833fc3bf28c4aff577ffef7913f881d2d92"
+    },
+    {
+      "name": "fault-recovery",
+      "sha256": "03df6f9982da793b55f4d70c410c5afb95372f1b3fdd42d5857be84082f5d0e1"
+    }
+  ],
+  "gate": {
+    "passed": true,
+    "checks": [
+      {
+        "fixture": "json_complete",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_complete",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_fragmented",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_fragmented",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_invalid_fields",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_invalid_fields",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_malformed_recovery",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_malformed_recovery",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_oversize_recovery",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_oversize_recovery",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_stale_recovery",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_stale_recovery",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_truncated",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "json_truncated",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "bulk-4096",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "bulk-4096",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "fragmented-1-2-7-3",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "fragmented-1-2-7-3",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "bytewise",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "bytewise",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "fault-recovery",
+        "parser": "bytewise_reference",
+        "passed": true,
+        "diff": ""
+      },
+      {
+        "fixture": "fault-recovery",
+        "parser": "chunk_scanning",
+        "passed": true,
+        "diff": ""
+      }
+    ]
+  },
+  "workloads": [
+    {
+      "name": "bulk-4096",
+      "fixture_sha256": "cc202aae41aa6da835ca9f34f99acee02936d6e0afdaa376ecff663a94b890f8",
+      "expected_sha256": "b4725047461702fba1aae180f909476e478d821671bf672a707732bd897932c6",
+      "bytes": 76739,
+      "events": 19,
+      "emitted_records": 2048,
+      "timings": {
+        "bytewise_reference": {
+          "samples_ns": [
+            18294200,
+            18034900,
+            18064000,
+            20137600,
+            19678700,
+            18367800,
+            18521100,
+            18556100,
+            17822400
+          ],
+          "median_ns": 18367800,
+          "min_ns": 17822400,
+          "max_ns": 20137600,
+          "p95_ns": 20137600,
+          "population_stdev_ns": 737415.2124519506
+        },
+        "chunk_scanning": {
+          "samples_ns": [
+            8669000,
+            8492700,
+            8734400,
+            8600900,
+            9218000,
+            9006300,
+            8605400,
+            8906100,
+            8585900
+          ],
+          "median_ns": 8669000,
+          "min_ns": 8492700,
+          "max_ns": 9218000,
+          "p95_ns": 9218000,
+          "population_stdev_ns": 224012.1326079361
+        }
+      },
+      "speed_ratio": 2.1187910947052715,
+      "candidate_time_change_percent": -52.80327529698712
+    },
+    {
+      "name": "fragmented-1-2-7-3",
+      "fixture_sha256": "579d413e5b2fb5a10c22ca452acb358f6728251da0a368b4a4267de214513694",
+      "expected_sha256": "b4725047461702fba1aae180f909476e478d821671bf672a707732bd897932c6",
+      "bytes": 76739,
+      "events": 23612,
+      "emitted_records": 2048,
+      "timings": {
+        "bytewise_reference": {
+          "samples_ns": [
+            36215500,
+            27723400,
+            29831300,
+            28045400,
+            27448500,
+            27378500,
+            26932600,
+            27197800,
+            28638900
+          ],
+          "median_ns": 27723400,
+          "min_ns": 26932600,
+          "max_ns": 36215500,
+          "p95_ns": 36215500,
+          "population_stdev_ns": 2742750.3410956394
+        },
+        "chunk_scanning": {
+          "samples_ns": [
+            26152000,
+            26170200,
+            26486300,
+            28874000,
+            24787100,
+            25049300,
+            25889200,
+            25281300,
+            26099500
+          ],
+          "median_ns": 26099500,
+          "min_ns": 24787100,
+          "max_ns": 28874000,
+          "p95_ns": 28874000,
+          "population_stdev_ns": 1125114.6974727225
+        }
+      },
+      "speed_ratio": 1.0622195827506273,
+      "candidate_time_change_percent": -5.857506655027878
+    },
+    {
+      "name": "bytewise",
+      "fixture_sha256": "33172f6e1f12446c27e1ff3e3e03a833fc3bf28c4aff577ffef7913f881d2d92",
+      "expected_sha256": "b4725047461702fba1aae180f909476e478d821671bf672a707732bd897932c6",
+      "bytes": 76739,
+      "events": 76739,
+      "emitted_records": 2048,
+      "timings": {
+        "bytewise_reference": {
+          "samples_ns": [
+            43900300,
+            44104200,
+            45308500,
+            44199300,
+            44661900,
+            46101700,
+            46388400,
+            42690300,
+            44280200
+          ],
+          "median_ns": 44280200,
+          "min_ns": 42690300,
+          "max_ns": 46388400,
+          "p95_ns": 46388400,
+          "population_stdev_ns": 1085169.7250194394
+        },
+        "chunk_scanning": {
+          "samples_ns": [
+            56236900,
+            58603100,
+            56507000,
+            56455700,
+            59571400,
+            58213400,
+            57146000,
+            54888700,
+            55601800
+          ],
+          "median_ns": 56507000,
+          "min_ns": 54888700,
+          "max_ns": 59571400,
+          "p95_ns": 59571400,
+          "population_stdev_ns": 1422216.2692583748
+        }
+      },
+      "speed_ratio": 0.7836232679137098,
+      "candidate_time_change_percent": 27.61234140767206
+    },
+    {
+      "name": "fault-recovery",
+      "fixture_sha256": "03df6f9982da793b55f4d70c410c5afb95372f1b3fdd42d5857be84082f5d0e1",
+      "expected_sha256": "b981a97015f69f10fcf1e8b6c7eb46ca8d17a82593f2e20190b7526dd340cfed",
+      "bytes": 206,
+      "events": 32,
+      "emitted_records": 6,
+      "timings": {
+        "bytewise_reference": {
+          "samples_ns": [
+            66400,
+            66200,
+            60700,
+            65500,
+            63500,
+            65100,
+            63700,
+            63400,
+            61500
+          ],
+          "median_ns": 63700,
+          "min_ns": 60700,
+          "max_ns": 66400,
+          "p95_ns": 66400,
+          "population_stdev_ns": 1882.669499525725
+        },
+        "chunk_scanning": {
+          "samples_ns": [
+            46300,
+            41200,
+            47700,
+            45800,
+            47300,
+            45700,
+            46800,
+            45900,
+            46800
+          ],
+          "median_ns": 46300,
+          "min_ns": 41200,
+          "max_ns": 47700,
+          "p95_ns": 47700,
+          "population_stdev_ns": 1798.215851035014
+        }
+      },
+      "speed_ratio": 1.3758099352051836,
+      "candidate_time_change_percent": -27.315541601255887
+    }
+  ],
+  "hotspots": {
+    "bytewise_reference": [
+      {
+        "file": "profiler.py",
+        "line": 73,
+        "function": "run_once",
+        "calls": 1,
+        "primitive_calls": 1,
+        "self_seconds": 6.88e-05,
+        "cumulative_seconds": 0.08430270000000001
+      },
+      {
+        "file": "examples.py",
+        "line": 25,
+        "function": "feed",
+        "calls": 19,
+        "primitive_calls": 19,
+        "self_seconds": 0.0411076,
+        "cumulative_seconds": 0.0841639
+      },
+      {
+        "file": "__init__.py",
+        "line": 304,
+        "function": "loads",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0034336,
+        "cumulative_seconds": 0.018015700000000003
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'append' of 'bytearray' objects>",
+        "calls": 74691,
+        "primitive_calls": 74691,
+        "self_seconds": 0.012598600000000001,
+        "cumulative_seconds": 0.012598600000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.len>",
+        "calls": 78787,
+        "primitive_calls": 78787,
+        "self_seconds": 0.0098448,
+        "cumulative_seconds": 0.0098448
+      },
+      {
+        "file": "decoder.py",
+        "line": 340,
+        "function": "decode",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0035480000000000004,
+        "cumulative_seconds": 0.0090159
+      },
+      {
+        "file": "__init__.py",
+        "line": 248,
+        "function": "detect_encoding",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0026084000000000003,
+        "cumulative_seconds": 0.004146100000000001
+      },
+      {
+        "file": "decoder.py",
+        "line": 351,
+        "function": "raw_decode",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0026341000000000003,
+        "cumulative_seconds": 0.0026341000000000003
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'match' of 're.Pattern' objects>",
+        "calls": 4096,
+        "primitive_calls": 4096,
+        "self_seconds": 0.0017776,
+        "cumulative_seconds": 0.0017776
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'get' of 'dict' objects>",
+        "calls": 6144,
+        "primitive_calls": 6144,
+        "self_seconds": 0.001487,
+        "cumulative_seconds": 0.001487
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'startswith' of 'bytes' objects>",
+        "calls": 6144,
+        "primitive_calls": 6144,
+        "self_seconds": 0.0012211000000000001,
+        "cumulative_seconds": 0.0012211000000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.isinstance>",
+        "calls": 6144,
+        "primitive_calls": 6144,
+        "self_seconds": 0.0011408,
+        "cumulative_seconds": 0.0011408
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'end' of 're.Match' objects>",
+        "calls": 4096,
+        "primitive_calls": 4096,
+        "self_seconds": 0.0007267,
+        "cumulative_seconds": 0.0007267
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'decode' of 'bytes' objects>",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0006525000000000001,
+        "cumulative_seconds": 0.0006525000000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'append' of 'list' objects>",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0005408,
+        "cumulative_seconds": 0.0005408
+      }
+    ],
+    "chunk_scanning": [
+      {
+        "file": "profiler.py",
+        "line": 73,
+        "function": "run_once",
+        "calls": 1,
+        "primitive_calls": 1,
+        "self_seconds": 6.36e-05,
+        "cumulative_seconds": 0.0326127
+      },
+      {
+        "file": "optimized.py",
+        "line": 16,
+        "function": "feed",
+        "calls": 19,
+        "primitive_calls": 19,
+        "self_seconds": 0.010183900000000001,
+        "cumulative_seconds": 0.0325039
+      },
+      {
+        "file": "__init__.py",
+        "line": 304,
+        "function": "loads",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0032354000000000003,
+        "cumulative_seconds": 0.017401
+      },
+      {
+        "file": "decoder.py",
+        "line": 340,
+        "function": "decode",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0033580000000000003,
+        "cumulative_seconds": 0.0087788
+      },
+      {
+        "file": "__init__.py",
+        "line": 248,
+        "function": "detect_encoding",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0025133,
+        "cumulative_seconds": 0.003973
+      },
+      {
+        "file": "decoder.py",
+        "line": 351,
+        "function": "raw_decode",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0026225000000000003,
+        "cumulative_seconds": 0.0026225000000000003
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'match' of 're.Pattern' objects>",
+        "calls": 4096,
+        "primitive_calls": 4096,
+        "self_seconds": 0.0017089000000000002,
+        "cumulative_seconds": 0.0017089000000000002
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.len>",
+        "calls": 8245,
+        "primitive_calls": 8245,
+        "self_seconds": 0.0013545,
+        "cumulative_seconds": 0.0013545
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'get' of 'dict' objects>",
+        "calls": 6144,
+        "primitive_calls": 6144,
+        "self_seconds": 0.001347,
+        "cumulative_seconds": 0.001347
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.isinstance>",
+        "calls": 6144,
+        "primitive_calls": 6144,
+        "self_seconds": 0.0011575000000000001,
+        "cumulative_seconds": 0.0011575000000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'startswith' of 'bytes' objects>",
+        "calls": 6144,
+        "primitive_calls": 6144,
+        "self_seconds": 0.0011376000000000001,
+        "cumulative_seconds": 0.0011376000000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'end' of 're.Match' objects>",
+        "calls": 4096,
+        "primitive_calls": 4096,
+        "self_seconds": 0.0007279000000000001,
+        "cumulative_seconds": 0.0007279000000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'decode' of 'bytes' objects>",
+        "calls": 2048,
+        "primitive_calls": 2048,
+        "self_seconds": 0.0006188000000000001,
+        "cumulative_seconds": 0.0006188000000000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'extend' of 'bytearray' objects>",
+        "calls": 2065,
+        "primitive_calls": 2065,
+        "self_seconds": 0.0006151,
+        "cumulative_seconds": 0.0006151
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'find' of 'bytes' objects>",
+        "calls": 2065,
+        "primitive_calls": 2065,
+        "self_seconds": 0.0005754,
+        "cumulative_seconds": 0.0005754
+      }
+    ]
+  }
+}
