@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uart-fixture-kit"
-version = "0.2.0"
+version = "0.3.0"
 description = "Deterministic byte-stream fixtures for testing your own UART parser"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,7 +32,7 @@ Issues = "https://github.com/vanovri/uart-fixture-kit/issues"
 where = ["src"]
 
 [tool.setuptools.package-data]
-uart_fixture_kit = ["fixtures/*.json"]
+uart_fixture_kit = ["fixtures/*.json", "assets/*.html", "assets/*.css", "assets/*.mjs"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

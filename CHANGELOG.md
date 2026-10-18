@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 - 2026-10-19
+
+- Add an offline Twin Bench with eight synthetic loss, corruption, and delay combinations.
+- Replay bytes through the existing binary parser, preserving receiver logs and data/source hashes.
+- Hold back older samples and label generation-based freshness rather than refreshing age on late arrival.
+- Add a self-contained 2D/3D data glyph, replay controls, JSON export, Python model tests, and Node view tests.
+
 ## 0.2.0
 
 - Chunk-scanning JSON alternative, preserving the byte-wise reference parser.

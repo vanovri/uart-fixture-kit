@@ -26,10 +26,27 @@ def main(argv=None) -> int:
     profile.add_argument("--output", type=Path, default=Path("uart-profile.json"))
     profile.add_argument("--html", type=Path, help="also write a standalone HTML report")
     profile.set_defaults(json=True)
+    twin = subcommands.add_parser("twin", help="export a standalone synthetic UART fault replay")
+    twin.add_argument("--frames", type=int, default=120)
+    twin.add_argument("--output", type=Path, default=Path("uart-twin.html"))
+    twin.add_argument("--json-output", type=Path, help="also save the eight-scenario evidence bank")
+    twin.set_defaults(json=True)
     args = parser.parse_args(argv)
     reports = []
     try:
-        if args.command == "profile":
+        if args.command == "twin":
+            from .twin import build_twin_bank, render_twin_html
+            if args.json_output and args.output.resolve() == args.json_output.resolve():
+                raise ValueError("HTML and JSON output paths must differ")
+            bank = build_twin_bank(args.frames)
+            args.output.write_text(render_twin_html(bank), encoding="utf-8")
+            if args.json_output:
+                args.json_output.write_text(json.dumps(bank, indent=2, allow_nan=False), encoding="utf-8")
+            print(json.dumps({"scenarios": len(bank["scenarios"]), "frames": args.frames,
+                              "html": str(args.output),
+                              "json": str(args.json_output) if args.json_output else None}))
+            return 0
+        elif args.command == "profile":
             from .profiler import run_profile
             from .profile_report import render_profile_html
             report = run_profile(args.records, args.repeats, args.warmups)
