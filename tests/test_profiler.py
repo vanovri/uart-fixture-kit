@@ -9,8 +9,13 @@ import pytest
 from uart_fixture_kit import Event, Fixture, replay, schedule
 from uart_fixture_kit.examples import JsonLineParser
 from uart_fixture_kit.optimized import ChunkedJsonLineParser
-from uart_fixture_kit.profiler import (build_workloads, bundled_json_fixtures,
-    canonical, fixture_digest, run_profile, validate_parsers)
+from uart_fixture_kit.profiler import (
+    build_workloads,
+    bundled_json_fixtures,
+    canonical,
+    fixture_digest,
+    run_profile,
+)
 
 
 @pytest.mark.parametrize("fixture", bundled_json_fixtures(), ids=lambda fixture: fixture.name)
@@ -72,7 +77,7 @@ def test_workloads_are_reproducible_and_match_explicit_expected_records():
 
 
 def test_broken_candidate_prevents_any_timing(monkeypatch):
-    import uart_fixture_kit.profiler as profiler
+    from uart_fixture_kit import profiler
     class Broken(JsonLineParser):
         def feed(self, data, now_ms):
             return []
@@ -107,7 +112,7 @@ def test_profile_cli_writes_json_and_html(tmp_path):
     target, html = tmp_path / "result.json", tmp_path / "result.html"
     result = subprocess.run([sys.executable, "-m", "uart_fixture_kit", "profile", "--records", "3",
         "--repeats", "3", "--warmups", "1", "--output", str(target), "--html", str(html)],
-        capture_output=True, text=True)
+        capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["passed"]
     assert json.loads(target.read_text(encoding="utf-8"))["passed"]

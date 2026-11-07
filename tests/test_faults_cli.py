@@ -34,7 +34,7 @@ def test_invalid_drop(offset,count):
 
 
 def run_cli(*args):
-    return subprocess.run([sys.executable,"-m","uart_fixture_kit",*args],capture_output=True,text=True)
+    return subprocess.run([sys.executable,"-m","uart_fixture_kit",*args],capture_output=True,text=True,check=False)
 
 
 def test_demo_json_in_installed_package():

@@ -6,7 +6,6 @@ import pytest
 from uart_fixture_kit import Event, Fixture, Parser, load_fixture, replay
 from uart_fixture_kit.examples import BinaryParser, JsonLineParser
 
-
 FIXTURES = sorted(resources.files("uart_fixture_kit").joinpath("fixtures").iterdir(), key=lambda p: p.name)
 
 

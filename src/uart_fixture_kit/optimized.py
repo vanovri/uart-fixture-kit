@@ -1,9 +1,17 @@
-"""Chunk-scanning alternative to the unchanged byte-wise JSON reference parser."""
+"""Chunk-scanning alternatives to the byte-wise reference parsers."""
 
-import json
-import math
+from __future__ import annotations
 
-from .examples import JsonLineParser, diagnostic
+from .core import Record, _milliseconds
+from .examples import (
+     MAX_JSON_LINE_BYTES,
+    BinaryParser,
+    JsonLineParser,
+    _decode_json_line,
+    diagnostic,
+)
+
+__all__ = ["ChunkedBinaryParser", "ChunkedJsonLineParser"]
 
 
 class ChunkedJsonLineParser(JsonLineParser):
@@ -13,12 +21,16 @@ class ChunkedJsonLineParser(JsonLineParser):
     This is a synthetic reference example, not a serial transport or standard.
     """
 
-    def feed(self, data: bytes, now_ms: int):
-        output = []
+    def feed(self, data: bytes, now_ms: int) -> list[Record]:
+        if not isinstance(data, bytes):
+            raise TypeError("data must be bytes")
+        _milliseconds(now_ms, "now_ms")
+        output: list[Record] = []
         if data:
             self.last_byte_ms = now_ms
         offset = 0
-        while offset < len(data):
+        total = len(data)
+        while offset < total:
             newline = data.find(b"\n", offset)
             if self.discarding:
                 if newline < 0:
@@ -26,10 +38,10 @@ class ChunkedJsonLineParser(JsonLineParser):
                 self.discarding = False
                 offset = newline + 1
                 continue
-            end = len(data) if newline < 0 else newline
+            end = total if newline < 0 else newline
             # Check size before slicing so a huge unfinished line cannot grow
             # the bounded buffer or allocate a second copy of the input.
-            if len(self.buffer) + end - offset > 128:
+            if len(self.buffer) + end - offset > MAX_JSON_LINE_BYTES:
                 self.buffer.clear()
                 output.append(diagnostic("oversize"))
                 self.discarding = newline < 0
@@ -43,16 +55,9 @@ class ChunkedJsonLineParser(JsonLineParser):
             line = bytes(self.buffer)
             self.buffer.clear()
             offset = newline + 1
-            try:
-                value = json.loads(line)
-            except (ValueError, UnicodeDecodeError):
-                output.append(diagnostic("invalid_json"))
-                continue
-            if (not isinstance(value, dict)
-                or type(value.get("seq")) is not int or not 0 <= value["seq"] <= 255
-                or type(value.get("value")) not in (int, float)
-                or not math.isfinite(value["value"]) or value.get("unit") != "C"):
-                output.append(diagnostic("invalid_record"))
-                continue
-            output.append({"kind": "message", "seq": value["seq"], "value": value["value"], "unit": "C"})
+            output.append(_decode_json_line(line))
         return output
+
+
+class ChunkedBinaryParser(BinaryParser):
+    """Cursor-scanning binary frame parser preserving exact BinaryParser semantics."""

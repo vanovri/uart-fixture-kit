@@ -76,10 +76,10 @@ def test_bank_reproducible_and_html_self_contained():
 def test_cli_exports_both_files_and_rejects_same_target(tmp_path):
     html, data = tmp_path / 'twin.html', tmp_path / 'twin.json'
     command = [sys.executable, '-m', 'uart_fixture_kit', 'twin', '--frames', '12', '--output', str(html)]
-    result = subprocess.run(command + ['--json-output', str(data)], capture_output=True, text=True)
+    result = subprocess.run(command + ['--json-output', str(data)], capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
     assert json.loads(data.read_text()) == build_twin_bank(12)
     assert html.read_text(encoding='utf-8') == render_twin_html(build_twin_bank(12))
     original = html.read_bytes()
-    rejected = subprocess.run(command + ['--json-output', str(html)], capture_output=True, text=True)
+    rejected = subprocess.run(command + ['--json-output', str(html)], capture_output=True, text=True, check=False)
     assert rejected.returncode == 2 and html.read_bytes() == original
