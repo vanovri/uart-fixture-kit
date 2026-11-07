@@ -119,3 +119,7 @@ Optional CLI smoke checks:
 $env:PYTHONPATH = 'src'
 C:\Python314\python.exe -m uart_fixture_kit demo
 ```
+
+## Source crosscheck, 2026-11-08
+
+Source descriptions and proposal removed-lines were crosschecked on 2026-11-08. Test commands are retained for reproduction. Historical test counts are not a fresh run result. Fixture freezing prevents attribute rebinding but does not recursively freeze its expected list.

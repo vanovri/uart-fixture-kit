@@ -1,10 +1,10 @@
 # Technical Debt & Performance Ledger — `uart-fixture-kit`
 
-All items below are verified against the current repository source files on disk with exact 1-based line numbers. Production code has not been speculatively modified.
+Source crosscheck: 2026-11-08 WIB. The locations and removed lines match current source. Diffs are independent proposals, not applied changes or measured speedups.
 
 ---
 
-## 1. Unstored Snapshot in `Fixture.__post_init__` & Double JSON Serialization in `ReplayResult.assert_matches`
+## 1. Store the validated snapshot in `Fixture.__post_init__`
 
 - **Location**: `src/uart_fixture_kit/core.py` (lines `83-87`)
 - **Category**: Immutability Isolation & Serialization Overhead
@@ -67,3 +67,5 @@ Run `$env:PYTHONPATH='src'; C:\Python314\python.exe -m pytest -q`.
 
 ### Verification
 Run `node --test tests/twin-ui-controller.test.mjs`.
+
+The snapshot proposal isolates caller-owned input. It does not make the exposed expected list recursively immutable. The trigonometric proposal reduces eight calls to four per project() call; it does not cache across vertices or frames.
