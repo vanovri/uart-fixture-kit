@@ -1,144 +1,71 @@
-# uart-fixture-kit
+# UART Fixture Kit
 
-[![Tests](https://github.com/vanovri/uart-fixture-kit/actions/workflows/tests.yml/badge.svg)](https://github.com/vanovri/uart-fixture-kit/actions/workflows/tests.yml)
+Deterministic byte-stream replay, correctness-gated parser profiling, and synthetic receiver fault inspection for serial protocols—without attached hardware.
 
-Reproduce byte-stream parser bugs without a serial device. Save raw bytes, their virtual arrival times, and expected records in JSON. Replay the same fixture against your own Python parser in pytest or from the command line.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB)
+![Dependencies: Zero Runtime](https://img.shields.io/badge/Runtime%20Deps-0-success)
+![Release: v0.3.0 Alpha](https://img.shields.io/badge/Version-0.3.0%20Alpha-orange)
 
-A serial read can return half a message, several messages, or noise followed by a valid frame. A parser that works with complete lines can still fail when those lines arrive in chunks. This toolkit makes that failure small, repeatable, and reviewable.
+Serial `read()` calls rarely align with application message boundaries. A single read can split a frame across two callbacks, concatenate multiple frames, interleave line noise with a valid header, or stall mid-packet past an inactivity deadline. Whole-line unit tests miss those state-machine transitions.
 
-## Try it
+**UART Fixture Kit** captures the exact byte-stream and virtual-clock contract in portable JSON fixtures, replays them deterministically against any Python parser adapter, gates throughput profiling behind strict equivalence checks, and exports an offline 8-scenario receiver fault timeline.
 
-Python 3.10 or newer. No runtime dependencies, API keys, GPU, or hardware.
+---
+
+## Core Capabilities & Boundaries
+
+| Capability | What It Does | Explicit Scope Boundary |
+|---|---|---|
+| **Deterministic Stream Replay** | Feeds exact hex chunks at ordered virtual millisecond ticks (`advance` -> `feed` -> `finish`) and compares JSON-snapshotted outputs against an explicit oracle. | Virtual timestamps drive parser timeout logic instantly; replay does not sleep in wall-clock time or validate physical baud-clock tolerance. |
+| **Correctness-Gated Profiler** | Verifies 22 fixture/workload equivalence checks before timing `JsonLineParser` vs. `ChunkedJsonLineParser` with alternating run order and isolated `cProfile`. | Measures Python byte-buffering and dispatch overhead on a specific host—not physical UART wire speed or DMA latency. |
+| **Synthetic Fault Twin** | Simulates all $2^3 = 8$ combinations of deterministic frame drop, payload/checksum corruption, and `350 ms` arrival delay, tracking sample staleness from generation time. | Visualizes precomputed software receiver state; not calibrated to a physical transceiver or noisy cable. |
+
+---
+
+## System Architecture
+
+```mermaid
+flowchart TD
+    Fixture["Version 1 JSON Fixture (hex chunks + virtual ms + expected oracle)"] --> Validate["Schema & Monotonic Timestamp Validator (core.py)"]
+    Factory["Trusted Local Parser Factory (MODULE:FACTORY)"] --> Adapter["Fresh Parser Instance"]
+    Validate --> Replay["Virtual-Time Replay Engine"]
+    Replay -->|"1. advance(at_ms) then feed(bytes, at_ms)"| Adapter
+    Replay -->|"2. advance(end_ms) then finish(end_ms)"| Adapter
+    Adapter --> Snapshot["Immediate JSON Record Snapshot (prevents mutable dict aliasing)"]
+    Snapshot --> Diff["Canonical Key-Sorted JSON Diff & Exit Code"]
+
+    Workloads["7 Saved Fixtures + 4 Generated Workloads"] --> Gate["22-Check Equivalence Gate (profiler.py)"]
+    Gate -->|"Pass Required"| PairedTiming["Alternating Paired Runs (GC paused inside window only)"]
+    PairedTiming --> CProf["Separate Unpaired cProfile Pass"]
+    CProf --> ProfOut["Profile JSON + Self-Contained HTML Report"]
+
+    FaultSchedule["8 Deterministic Drop / Corrupt / Delay Scenarios (twin.py)"] --> RefBin["BinaryParser (AA 55 + len + seq + i16 + sum8)"]
+    RefBin --> Freshness["Generation-Timestamp Freshness & Sequence Tracker"]
+    Freshness --> TwinViewer["Standalone Offline 2D/3D HTML Replay Viewer"]
+```
+
+---
+
+## Quick Start
+
+Install directly from the tagged GitHub release (no third-party runtime packages are installed):
 
 ```console
 python -m pip install "git+https://github.com/vanovri/uart-fixture-kit.git@v0.3.0"
-uart-fixture-kit demo
-uart-fixture-kit demo --json
+python -m uart_fixture_kit demo
+python -m uart_fixture_kit demo --json
 ```
 
-The demo runs bundled synthetic cases for newline JSON and a small binary protocol: complete, fragmented and concatenated messages, malformed JSON, invalid values and units, oversized lines, EOF truncation, stale partial input, bad frame length, checksum failure, resynchronization, duplicate sequence and sequence wraparound.
+`uart-fixture-kit` is registered as a console script and is identical to `python -m uart_fixture_kit`. Using `python -m` avoids `PATH` ambiguity across virtual environments.
 
-GitHub is the distribution source for this release. This package has not been published on PyPI.
+The bundled `demo` replays 15 synthetic newline-JSON and binary protocol fixtures covering split headers, coalesced bursts, malformed JSON, non-finite numbers, `>128`-byte line overflows, `50 ms` stale partial frames, truncated payloads, bad `sum8` checksums, noise resynchronization, duplicate sequence suppression, and `255 -> 0` sequence wraparound.
 
-## UART Parse Profiler
+---
 
-Version 0.2 adds a chunk-scanning JSON alternative without changing the byte-wise reference parser or the default demo. Measure both against the same synthetic input and virtual timestamps:
+## Authoring a Fixture & Parser Adapter
 
-```console
-uart-fixture-kit profile --records 2048 --repeats 9 --warmups 3 --output uart-profile.json --html uart-profile.html
-```
-
-Open the HTML file for the timing table and cProfile hotspots. JSON keeps every timing sample, environment details, source hashes and a manifest covering input bytes, timestamps and expected records. Seven saved JSON fixtures and four generated workloads must match their explicit record oracles on both parsers before timing. Each timed run is checked again outside the timer. No network connection or serial hardware is required.
-
-One Windows/CPython 3.14.7 run on 18 October 2026 measured the following medians over nine paired repeats:
-
-| Synthetic workload | Reference ms | Chunk scanning ms | Reference / candidate |
-| --- | ---: | ---: | ---: |
-| 76,739 bytes in 4,096-byte chunks | 18.368 | 8.669 | 2.12x |
-| The same stream, repeating chunks 1/2/7/3 | 27.723 | 26.099 | 1.06x |
-| The same stream, one byte per event | 44.280 | 56.507 | 0.78x |
-| Malformed, oversized, stale and partial input recovery | 0.064 | 0.046 | 1.38x |
-
-The alternative was **slower for byte-by-byte arrival**. The smaller difference on fragmented input may be sensitive to measurement noise. These are parser/event-dispatch measurements on one machine, not UART link speed or a general performance guarantee. The original parser remains the default. See [methodology and exact replay](docs/PROFILING.md), [recorded JSON](docs/profile-sample.json) and [standalone HTML](docs/profile-sample.html).
-
-![Actual local profile report, including the slower byte-wise case](docs/profile-preview.png)
-
-## UART Twin Bench
-
-Version 0.3 adds an offline, self-contained receiver replay with a projected 3D
-temperature glyph. Generate all eight combinations of whole-frame loss, checksum
-damage/noise, and delayed arrivals using the existing binary reference parser:
-
-```console
-uart-fixture-kit twin --frames 120 --output uart-twin.html --json-output uart-twin.json
-```
-
-Open the HTML file, select faults, play or seek the virtual clock, and inspect
-the arrival log. The late-arrival example decodes sequence 5 at 852 ms after
-sequence 8 is already displayed. It stays in the log without rewinding the display
-or refreshing its age. Samples become stale 300 ms after generation, including
-at the end of the replay. Exported JSON preserves generated frames, injected
-faults, received byte chunks, decoded records, timeline, and hashes.
-
-![Actual synthetic replay](docs/twin-preview.png)
-
-See [the standalone demo](docs/twin-sample.html). Python computes the receiver
-timeline; the browser selects and visualizes it. The scene is a data glyph, not
-a hardware digital twin. Timings and Celsius values are synthetic. No device,
-serial connection, physiological model, or physical reliability claim is involved.
-The known injection count is distinct from sequence anomalies observed by the
-receiver. Sum8 is a demonstration checksum, not a CRC or authentication check.
-
-## Catch a real class of bug
-
-This fixture delivers `OK\n` in two reads:
-
-```python
-from uart_fixture_kit import Event, Fixture, Parser, replay
-
-fixture = Fixture(
-    name="split-line",
-    events=(Event(0, b"O"), Event(1, b"K\n")),
-    end_ms=2,
-    expected=[{"line": "OK"}],
-)
-
-class Broken(Parser):
-    def feed(self, data, now_ms):
-        # Mistake: assume every read contains complete lines.
-        return [{"line": part.decode()} for part in data.splitlines()]
-
-result = replay(fixture, Broken())
-assert not result.passed  # Actual records: O, K. Expected: OK.
-print(result.diff)
-```
-
-Keep unfinished bytes between reads:
-
-```python
-class Buffered(Parser):
-    def __init__(self):
-        self.pending = bytearray()
-
-    def feed(self, data, now_ms):
-        self.pending.extend(data)
-        records = []
-        while b"\n" in self.pending:
-            line, _, remainder = self.pending.partition(b"\n")
-            self.pending[:] = remainder
-            records.append({"line": line.decode()})
-        return records
-
-replay(fixture, Buffered()).assert_matches()
-```
-
-## Test your existing parser
-
-Subclass `Parser` and adapt your parser's decoded messages to JSON object records. The toolkit does not impose a wire format or decide which bytes are valid for your application.
-
-```python
-from uart_fixture_kit import Parser, load_fixture, replay
-
-class Adapter(Parser):
-    def __init__(self):
-        self.decoder = YourExistingDecoder()
-
-    def feed(self, data, now_ms):
-        return [{"value": message.value} for message in self.decoder.feed(data)]
-
-def test_uart_contract():
-    replay(load_fixture("tests/fixtures/split-message.json"), Adapter()).assert_matches()
-```
-
-For a CLI adapter, put a zero-argument factory or class in an importable module:
-
-```console
-uart-fixture-kit run tests/fixtures/split-message.json --parser my_adapter:Adapter --json
-```
-
-The adapter runs as ordinary trusted local Python code. Only run adapter modules you trust. Fixture JSON supplies bytes and expected data, never executable code.
-
-## Fixture format
+Save `split-line.json`:
 
 ```json
 {
@@ -153,58 +80,116 @@ The adapter runs as ordinary trusted local Python code. Only run adapter modules
 }
 ```
 
-- `hex` holds the exact received bytes. Spaces are allowed.
-- Times are non-negative integer milliseconds, ordered, and no later than `end_ms`. Equal arrival times are allowed; list order is preserved.
-- `advance(now_ms)` runs before each `feed(data, now_ms)` and again at `end_ms`. An event with empty `hex` is an explicit timer tick. No real time passes.
-- `finish(end_ms)` runs once. Override it to report incomplete data at EOF.
-- Every method emits zero or more JSON object records. `advance` and `finish` default to no output.
-- Expected records compare exactly, in order, using sorted-key JSON. Numeric spelling such as `1` versus `1.0` differs; object key order does not. Non-finite values are rejected.
-- A fresh parser instance is required for each replay. Parser exceptions retain their tracebacks through the Python API.
-
-CLI exit codes: `0` all contracts match, `1` records differ, `2` fixture/import/report error. Unexpected parser exceptions exit with a traceback.
-
-## Build fault cases
+Save `my_adapter.py` in the same directory:
 
 ```python
-from uart_fixture_kit import chunk_bytes, drop_bytes, flip_byte, schedule
+from uart_fixture_kit import Parser
 
-chunks = chunk_bytes(b"OK\nREADY\n", [1, 2, 3])  # Repeating explicit sizes.
-events = schedule(b"OK\n", [1], interval_ms=10)
-corrupted = flip_byte(b"abc", offset=1, mask=1)
-missing = drop_bytes(b"abc", offset=1, count=1)
+
+class BufferedLineParser(Parser):
+    def __init__(self) -> None:
+        self.pending = bytearray()
+
+    def feed(self, data: bytes, now_ms: int) -> list[dict]:
+        self.pending.extend(data)
+        emitted: list[dict] = []
+        while b"\n" in self.pending:
+            line, _, remainder = self.pending.partition(b"\n")
+            self.pending[:] = remainder
+            emitted.append({"line": line.decode("utf-8")})
+        return emitted
 ```
 
-These helpers have no random state. Store the resulting hex and arrival times in a fixture to share a failure. Duplicate input by inserting the same event or frame twice.
+Execute from the command line or inside `pytest`:
 
-## Reference examples and limits
+```console
+python -m uart_fixture_kit run split-line.json --parser my_adapter:BufferedLineParser
+```
 
-`JsonLineParser` accepts newline-delimited synthetic temperature records with `seq` 0..255, a finite numeric `value`, and `unit: "C"`. It limits unfinished lines to 128 bytes and uses a 50 ms inactivity timeout. Timer diagnostics occur at the supplied virtual ticks, not necessarily at the physical threshold instant.
+```python
+from uart_fixture_kit import load_fixture, replay
+from my_adapter import BufferedLineParser
 
-`BinaryParser` uses a demonstration frame: `AA 55 | length=3 | sequence:u8 | centi-C:i16 little-endian | sum8`. The checksum covers length and payload modulo 256. It rejects wrong lengths/checksums, suppresses immediately repeated sequence numbers, and accepts 255-to-0 wraparound. A sequence discontinuity indicates a change in sequence, not proof of packet loss. Sum8 is not a CRC or authentication mechanism.
 
-Both examples are deliberately small. They are not production telemetry standards, device drivers, or clinical software. Fixtures use synthetic bytes only. Software replay cannot validate UART electrical behavior, baud-rate accuracy, ADC timing, hardware reliability, or device safety.
+def test_split_line_contract() -> None:
+    result = replay(load_fixture("split-line.json"), BufferedLineParser())
+    result.assert_matches()
+```
 
-## Development
+### Replay Contract Rules
+- **Fresh state per run:** Always pass a new parser instance to `replay()`.
+- **Optional lifecycle hooks:** Override `advance(now_ms)` to emit inactivity timeout diagnostics before incoming bytes arrive at `now_ms`, and `finish(now_ms)` to flush or report truncated trailing bytes at end-of-stream.
+- **Zero-byte timer ticks:** An event with `"hex": ""` advances virtual time without feeding bytes, letting fixtures test exact timeout boundaries.
+- **Strict JSON typing:** Boolean timestamps (`true`/`false`) and non-finite floats (`NaN`/`Infinity`) are rejected. Record comparison preserves array order and numeric JSON spelling (`1` vs `1.0`).
+
+---
+
+## CLI Reference & Exit Codes
+
+```console
+# 1. Bundled reference suite
+python -m uart_fixture_kit demo [--json]
+
+# 2. Custom adapter verification
+python -m uart_fixture_kit run FIXTURE.json --parser MODULE:FACTORY [--json]
+
+# 3. Correctness-gated parser profiler
+python -m uart_fixture_kit profile --records 2048 --repeats 9 --warmups 3 --output uart-profile.json --html uart-profile.html
+
+# 4. Eight-scenario synthetic fault twin
+python -m uart_fixture_kit twin --frames 120 --output uart-twin.html --json-output uart-twin.json
+```
+
+| Subcommand | Key Bounds & Flags | Audit Note (`v0.3.0`) |
+|---|---|---|
+| `profile` | `--records` (`1..10000`, default `2048`), `--repeats` (`3..31`, default `7`), `--warmups` (`1..10`, default `2`), `--output`, `--html` | Supply **distinct** paths for `--output` and `--html`; both `profile` and `twin` reject identical resolved paths (`exit code 2`). |
+| `twin` | `--frames` (`12..240`, default `120`), `--output`, `--json-output` | Generates all 8 combinations of drop (every 5th frame), corrupt (every 7th retained), and `350 ms` delay (every 6th retained). |
+
+| Exit Code | Meaning |
+|---:|---|
+| `0` | All replay expectations matched, profiler correctness gate + export succeeded, or twin export succeeded. |
+| `1` | Emitted parser records diverged from `expected`, or profiler candidate failed equivalence gate. |
+| `2` | Malformed fixture schema, invalid CLI arguments, `ImportError`/`AttributeError` loading factory, or handled I/O error. |
+
+---
+
+## Correctness-Gated Profiling & Negative-Case Transparency
+
+`ChunkedJsonLineParser` (`optimized.py`) replaces byte-by-byte buffer scanning with chunk-level newline search while checking the `128`-byteunfinished-line ceiling *before* slicing. Rather than claiming a universal speedup, `profiler.py` enforces 22 equivalence checks first and tests four distinct arrival geometries.
+
+Archived sample (`docs/profile-sample.json`, recorded on Windows / CPython `3.14.7`, `2,048` records, `9` repeats, `3` warm-ups):
+
+| Arrival Workload (`76,739` payload bytes except recovery) | `JsonLineParser` Median | `ChunkedJsonLineParser` Median | Ratio (`Ref / Opt`) | Engineering Interpretation |
+|---|---:|---:|---:|---|
+| Bulk chunks up to `4,096 B` | `18.368 ms` | `8.669 ms` | **`2.12x`** | Fewer Python loop iterations across large DMA/OS read buffers. |
+| Fragmented `1 / 2 / 7 / 3 B` cycle | `27.723 ms` | `26.099 ms` | **`1.06x`** | Modest gain when frames still span multiple tiny reads. |
+| Pathological `1-byte` arrival events | `44.280 ms` | `56.507 ms` | **`0.78x` (slower)** | Per-call chunk bookkeeping dominates single-byte dispatch; `JsonLineParser` remains package default. |
+| Fault & overflow recovery (`128 B` cap + stale ticks) | `0.064 ms` | `0.046 ms` | **`1.38x`** | Early length guard avoids copying oversized unfinished lines. |
+
+---
+
+## Development & Verification
 
 ```console
 git clone https://github.com/vanovri/uart-fixture-kit.git
 cd uart-fixture-kit
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
+# Windows: .venv\Scripts\activate | Linux/macOS: source .venv/bin/activate
 python -m pip install -e ".[dev]"
-python -m pytest
+
+python -m pytest -q
+node --test tests/twin.test.mjs
 python -m build
 ```
 
-Tests include a failing broken-parser regression, every two-chunk split of representative streams, byte-by-byte corruption recovery, timer boundary cases, CLI exit codes, fixture validation, and installed-package demo checks. CI runs on Windows and Linux across Python 3.10, 3.12, and 3.14.
+- **Verified Local Audit (7 November 2026):** `248` Python tests passed (`CPython 3.14.7`) and `5` Node viewer tests (`tests/*.test.mjs`) passed (`Node v24.20.0`). *(Note: 8 tests in `tests/test_fault_injection_and_interview_drills.py` exercise a self-contained CRC drill parser for protocol education rather than shipped package modules.)*
+- **CI Matrix:** `.github/workflows/` runs `pytest`, Node viewer checks, wheel build, and installed-wheel CLI smoke tests across Windows and Ubuntu on Python `3.10`, `3.12`, and `3.14`.
 
-Profiler tests also cover the 127/128/129-byte line boundary, mixed invalid input, empty-feed timeout behavior, bounded oversized partial input, rejection of an incorrect candidate before timing, raw-sample reports and the installed-wheel CLI.
+---
 
-## Related tools
+## Security & Trust Model
 
-[pySerial](https://pyserial.readthedocs.io/en/latest/) provides serial transport and loopback facilities. [Serial Studio](https://github.com/Serial-Studio/Serial-Studio) provides telemetry visualization and capture/replay. [WireDAQ](https://github.com/wuisabel-gif/WireDAQ) includes its own wire protocol and fault simulation. This project focuses on a small fixture contract for adapters to existing parsers. Replay and fault injection are established techniques.
-
-## Contribute
-
-Bring a minimal synthetic failing fixture and its expected output. See [CONTRIBUTING.md](CONTRIBUTING.md). MIT licensed. Initial implementation was created with AI coding assistance and checked by executable tests; no claim of entirely human-written code.
+- **Trusted Adapter Code:** `--parser MODULE:FACTORY` imports and executes local Python code with caller privileges. It is a test runner, **not** an untrusted-code sandbox.
+- **Memory Bounds:** `load_fixture()` reads the full JSON document into memory; apply OS/container limits if validating huge externally supplied files.
+- **Checksum Scope:** Reference `BinaryParser` uses modulo-256 `sum8` for framing education—use CRC-16/CRC-32 or authenticated framing in production hardware protocols.
+- **Provenance:** All bundled fixtures are 100% synthetic (zero human subject recordings or proprietary captures). Built with AI coding assistance and verified via deterministic assertions; see [`docs/PROVENANCE.md`](docs/PROVENANCE.md) and [`LICENSE`](LICENSE).

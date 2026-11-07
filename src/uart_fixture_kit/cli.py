@@ -49,6 +49,8 @@ def main(argv=None) -> int:
         elif args.command == "profile":
             from .profiler import run_profile
             from .profile_report import render_profile_html
+            if args.html and args.output.resolve() == args.html.resolve():
+                raise ValueError("JSON and HTML output paths must differ")
             report = run_profile(args.records, args.repeats, args.warmups)
             args.output.write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
             if args.html:
