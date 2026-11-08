@@ -15,6 +15,7 @@ In `Fixture.__post_init__` (`src/uart_fixture_kit/core.py:83-87`), `_snapshot_js
 
 ### Proposed Patch (`diff`)
 ```diff
+diff --git a/src/uart_fixture_kit/core.py b/src/uart_fixture_kit/core.py
 --- a/src/uart_fixture_kit/core.py
 +++ b/src/uart_fixture_kit/core.py
 @@ -84,7 +84,7 @@
@@ -44,6 +45,7 @@ Run `$env:PYTHONPATH='src'; C:\Python314\python.exe -m pytest -q`.
 
 ### Proposed Patch (`diff`)
 ```diff
+diff --git a/src/uart_fixture_kit/assets/twin_ui.mjs b/src/uart_fixture_kit/assets/twin_ui.mjs
 --- a/src/uart_fixture_kit/assets/twin_ui.mjs
 +++ b/src/uart_fixture_kit/assets/twin_ui.mjs
 @@ -152,10 +152,12 @@

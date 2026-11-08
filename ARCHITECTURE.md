@@ -105,7 +105,7 @@ sequenceDiagram
 
 ## Local Verification & Test Commands
 
-Run the full Python (`pytest`) and Node.js (`node:test`) verification suites from `C:\Users\ardhy\Projects\uart-fixture-kit`:
+Run the full Python (`pytest`) and Node.js (`node:test`) verification suites from `.`:
 
 ```powershell
 $env:PYTHONPATH = 'src'

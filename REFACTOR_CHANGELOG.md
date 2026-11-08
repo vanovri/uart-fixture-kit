@@ -74,8 +74,8 @@
 node --test tests/*.test.mjs
 
 # 3. Ruff Linter -> Exit Code: 0 (All checks passed!)
-C:\Users\ardhy\.gemini\antigravity\brain\7b19fb5e-cc47-425f-9713-ee64d56c8136\scratch\qa-tools\qa-venv\Scripts\ruff.exe check src tests
+ruff check src tests
 
 # 4. Mypy Type Checker -> Exit Code: 0 (Success: no issues found in 10 source files)
-C:\Users\ardhy\.gemini\antigravity\brain\7b19fb5e-cc47-425f-9713-ee64d56c8136\scratch\qa-tools\qa-venv\Scripts\mypy.exe src --ignore-missing-imports
+mypy src --ignore-missing-imports
 ```
