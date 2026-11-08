@@ -25,8 +25,8 @@
     "speed_ratio": "reference median / chunk-scanning median"
   },
   "sources": {
-    "reference_sha256": "c9562cf89b2049d0b7299cf7ab857b008e0efb6de0fc4fa1dfdecf4abfda73e7",
-    "candidate_sha256": "da86bce5a1d40f33b62efb4b8c088be1122c49934bd3ff718d8bbb504113a7ac"
+    "reference_sha256": "5b428463ad1354f154f454de16f99f7f4fdd3646ebb2599c09bbba542b2f577c",
+    "candidate_sha256": "aa0ecd51ad28216ee5f4193ba67c618ed4c337da8f6a337530850b4474ccd9ce"
   },
   "fixture_manifest": [
     {

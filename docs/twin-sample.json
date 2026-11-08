@@ -72607,7 +72607,7 @@
     }
   ],
   "protocol": "AA 55 | length=3 | sequence:u8 | centi-C:i16 LE | sum8",
-  "parser_sha256": "1e2a44334cf0d199aa12362ba7e676d4dee1e9d7e0175342d17c5c433cf8d86b",
+  "parser_sha256": "5b428463ad1354f154f454de16f99f7f4fdd3646ebb2599c09bbba542b2f577c",
   "method": {
     "sample_interval_ms": 100,
     "decode_chunk_offsets_ms": [
